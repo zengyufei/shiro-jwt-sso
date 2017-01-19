@@ -2,7 +2,6 @@ package com.github.zhangkaitao.shiro.chapter20.filter;
 
 import com.baomidou.kisso.SSOHelper;
 import com.baomidou.kisso.Token;
-import com.baomidou.kisso.web.waf.request.WafRequestWrapper;
 import com.github.zhangkaitao.shiro.chapter20.mgt.StatelessDefaultSubjectFactory;
 import com.zyf.shirotest.entity.User;
 import com.zyf.shirotest.service.UserService;
@@ -44,9 +43,7 @@ public class StatelessAuthcFilter extends AccessControlFilter {
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
         System.out.println("过滤器");
         HttpServletRequest req = (HttpServletRequest) request;
-        //正常登录 需要过滤sql及脚本注入
-        WafRequestWrapper wr = new WafRequestWrapper(req);
-        Token token = SSOHelper.getToken(wr);
+        Token token = SSOHelper.getToken(req);
         if(token != null){
             User user = userService.queryInfo(token.getId());
             SimplePrincipalCollection principalCollection =
@@ -57,7 +54,7 @@ public class StatelessAuthcFilter extends AccessControlFilter {
                             getHost(request), null, false,
                             request,response, securityManager);
             ThreadContext.bind(webDelegatingSubject);
-            wr.setAttribute("cacheToken", token);
+            req.setAttribute("cacheToken", token);
         }else{
             redirectToLogin(request, response);
         }
